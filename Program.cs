@@ -20,7 +20,9 @@ namespace BaseballDataRecode
         var data = ctx.Data.LoadFromTextFile<MLBBaseballBatter>(path: dataPath, hasHeader: true, separatorChar: ',', allowQuoting: false);
 
 	//var ppl = ctx.Transforms.Conversion.MapValueToKey("classkey", "class");
-	var ppl = ctx.Transforms.SelectColumns("FullPlayerName", "YearsPlayed");
+	//var ppl = ctx.Transforms.Concatenate("Features", featuresArray).Append(ctx.Transforms.Conversion.MapValueToKey("target"));
+	var ppl =         ctx.Transforms.Conversion.MapValueToKey("InductedToHallOfFame")
+		  .Append(ctx.Transforms.SelectColumns("YearsPlayed", "AB", "R", "H", "Doubles", "Triples", "HR", "RBI", "SB", "BattingAverage", "SluggingPct", "AllStarAppearances", "TB", "TotalPlayerAwards", "InductedToHallOfFame"));
         var transformedData = ppl.Fit(data).Transform(data);
 
   	using (var fileStream = File.Create("ProcessedBaseballData.csv")) {
