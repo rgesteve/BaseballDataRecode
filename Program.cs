@@ -10,20 +10,28 @@ namespace BaseballDataRecode
     static void Main(string[] args)
     {
       try {
-      var rootDataPath = Environment.GetEnvironmentVariable("DATAPATH") ?? throw new Exception("Could not find environment variable");
-      var dataPath = Path.Join(rootDataPath, "MLDotNet-BaseballClassification","MLDotNet-BaseballClassification", "Data", "MLBBaseballBattersSplitTest.csv");
-      if (!File.Exists(dataPath)) {
-      	 throw new Exception($"Could not find data in specified path {dataPath}");
-      }
-/*
-      var ctx = new MLContext();
-      */
-      	      Console.WriteLine("Hello, World!");
-	} catch (Exception ex)  {  
-          Console.WriteLine($"{ex.GetType()} says {ex.Message}");
-	  Environment.Exit(1);
+        var rootDataPath = Environment.GetEnvironmentVariable("DATAPATH") ?? throw new Exception("Could not find environment variable");
+        var dataPath = Path.Join(rootDataPath, "MLDotNet-BaseballClassification","MLDotNet-BaseballClassification", "Data", "MLBBaseballBattersSplitTest.csv");
+        if (!File.Exists(dataPath)) {
+      	  throw new Exception($"Could not find data in specified path {dataPath}");
         }
 
+        var ctx = new MLContext();
+        var data = ctx.Data.LoadFromTextFile<MLBBaseballBatter>(path: dataPath, hasHeader: true, separatorChar: ',', allowQuoting: false);
+
+	//var ppl = ctx.Transforms.Conversion.MapValueToKey("classkey", "class");
+	var ppl = ctx.Transforms.SelectColumns("FullPlayerName", "YearsPlayed");
+        var transformedData = ppl.Fit(data).Transform(data);
+
+  	using (var fileStream = File.Create("ProcessedBaseballData.csv")) {
+          ctx.Data.SaveAsText(transformedData, fileStream, separatorChar: ',', headerRow: true, schema: true);
+        }
+
+    	Console.WriteLine("Written transformed data!");
+      } catch (Exception ex)  {  
+        Console.WriteLine($"{ex.GetType()} says {ex.Message}");
+	Environment.Exit(1);
+      }
     }
   }
 
